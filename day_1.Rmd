@@ -1,0 +1,45 @@
+---
+title: "day 1"
+author: "Anthony"
+date: "12/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Part 1
+
+
+blah blah
+count the brackets
+
+```{r}
+library(tidyverse)
+library(tidytext)
+x <- readtext::readtext("./data/day_1_data.txt") %>%
+  mutate(text = str_replace_all(text, "\\(", "up,"),
+         text = str_replace_all(text, "\\)", "down,")) %>%
+  unnest_tokens(output = "char", input = text, token = "words") %>%
+  count(char) %>%
+  mutate(n = if_else(char == "down", -n, n)) %>% pull(n) %>% sum()
+```
+
+
+## Part 2
+
+find the first time Santa goes underground
+```{r}
+x <- readtext::readtext("./data/day_1_data.txt") %>%
+  mutate(text = str_replace_all(text, "\\(", "up,"),
+         text = str_replace_all(text, "\\)", "down,")) %>%
+  unnest_tokens(output = "char", input = text, token = "words") %>%
+  mutate(n = if_else(char == "up", 1, -1),
+         cum = cumsum(n),
+         row = row_number()) %>%
+  filter(cum <0) 
+x[1, "row"]
+```
+
+
