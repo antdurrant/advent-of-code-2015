@@ -6,6 +6,8 @@
 #- have a repeated letter
 #- NOT have ab cd pq or xy
 
+library(tidyverse)
+
 # prep for MUST #2
 l <- character()
 for(i in seq_along(letters)){
@@ -40,60 +42,35 @@ length(x[x == "nice"])
 
 
 # prep for MUST #2
-l <- character()
-for(i in seq_along(letters)){
-  letter <- paste0(rep(letters[i], 2), collapse = "")
-  if(length(l) == 0){
-    l <- paste(letter)
-  } else{
-    l<- paste(l, letter, sep = "|")
-  }
+input <- readLines("./data/day_5_data.txt")
+
+library(stringr)
+
+test_case <- c("qjhvhtzxzqqjkmpb", "xxyxx", "uurcxstgmygtbstg", "ieodomkazucvgmuy")
+
+# capturing groups! 
+# https://r4ds.hadley.nz/regexps.html#grouping-and-capturing
+# \\1 == same thing as first parens
+
+# returns true/false on finding at least one match
+repeated_pair <- function(x) {
+  str_count(x, "(..).*\\1") > 0
 }
 
 
-test_string <- function(string){
-  if(str_detect(string, "xy|ab|cd|pq")){
-    return("naughty")
-  }
-  
-  if(str_count(string, "a|e|i|o|u") >= 3 &
-     str_detect(string,  l)){
-    "nice"
-  } else {
-    "naughty"
-  }
-  
+# returns true/false on finding at least one match
+sandwich <- function(x){
+  str_count(x, "(.).\\1") > 0
 }
 
-l <- character()
-for(i in seq_along(letters)){
-  letter <- paste0(letters[i], ".", letters[i])
-  if(length(l) == 0){
-    l <- paste(letter)
-  } else{
-    l<- paste(l, letter, sep = "|")
-  }
+# vector of # tests passed
+# length of both passing
+how_many_nice <- function(x){
+  res <- repeated_pair(x) + sandwich(x)
+  length(res[res == 2])
 }
 
 
+how_many_nice(test_case)
 
-
-data.frame(input = read_lines("./data/day_5_data.txt")) %>%
-  tidytext::unnest_character_shingles("shingles",input, 2, drop = FALSE) %>%
-  group_by(input) %>%
-  mutate(row = row_number()) %>%
-  add_count(input, shingles) %>%
-  filter(n >= 2,
-         !(lag(row) == row | lead(row) == row))   %>% 
-  count(input, shingles) %>%
-  summarise(shingle_pass = max(n) >= 2) %>% 
-  mutate(pair_pass = str_detect(input, l)) %>%
-  group_by(input) %>%
-  mutate(all_pass = shingle_pass + pair_pass) %>%
-  ungroup() %>%
-  count(all_pass)
-
-
-
-
-
+how_many_nice(input)
