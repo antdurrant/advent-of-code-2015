@@ -252,3 +252,56 @@ part_1(input)
 part_2(input)   
 
 
+# aoc2015 day 15 ----
+ex <- "Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8
+Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3" 
+
+
+# demo
+d <- matrix(c(-1,-2,6,3,8,2,3,-2,-1,3), ncol = 2)
+
+df <- tibble(a = 0:100)
+# demo
+wts <- 
+    df %>%
+    mutate(b = map_dbl(a, ~(100-.x))) %>%
+    apply(1, unname, simplify = FALSE)
+# real
+wts <- 
+    df %>%
+    mutate(b = map(a, ~0:(100-.x))) %>%
+    unnest(b) %>%
+    mutate(c = map2(a,b, ~0:(100-.x-.y))) %>%
+    unnest(c) %>%
+    mutate(d = pmap_dbl(list(a,b,c), ~100-..1-..2-..3)) %>%
+    apply(1, identity, simplify = FALSE)
+
+
+
+pd <- function(d, y){
+    m <- rowSums(t(apply(d[1:4,], 1, \(x) x*matrix(y, ncol = 2))))
+    prod(ifelse(m<0, 0,m))
+}
+
+wts
+
+d <-
+    "Sprinkles: capacity 2, durability 0, flavor -2, texture 0, calories 3
+Butterscotch: capacity 0, durability 5, flavor -3, texture 0, calories 3
+Chocolate: capacity 0, durability 0, flavor 5, texture -1, calories 8
+Candy: capacity 0, durability -1, flavor 0, texture 5, calories 8" %>%
+    str_extract_all("[-\\d]+") %>%
+    unlist() %>%
+    as.numeric() %>%
+    matrix(ncol = 4)
+
+d <- matrix(c(2,0,-2,0,3,0,5,-3,0,3,0,0,5,-1,8,0,-1,0,5,8), ncol = 4)
+
+pd(d, wts[[45]])
+max(mapply(pd, wts, MoreArgs = list(d= d)))
+
+# pt2 - total cals must be 500
+new_wts <- Filter(\(x) sum(d[5,] * x) == 500, wts) 
+max(mapply(pd, new_wts, MoreArgs = list(d= d)))
+
+
