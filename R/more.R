@@ -165,3 +165,90 @@ fff <- list(list(a = "red"), b = list(a = "red", b = 1), c= 2)
 fff == "red"
 
 
+# day 18 ----
+
+    
+life <- function(m){
+    
+    nc <- ncol(m)
+    nr <- nrow(m)    
+    
+    # vertical ---
+    up <- rbind(m[2:nr,],0)
+    down <- rbind(0, m[1:(nr-1),])
+    
+    # horizontal ----
+    left <- cbind(m[,2:nc],0)
+    right <- cbind(0, m[,1:(nc-1)])
+    
+    # diagonals ----
+    upleft <- cbind(up[,2:nc], 0)
+    downleft <- cbind(down[,2:nc],0)
+    
+    upright <- cbind(0, up[,1:(nc-1)])
+    downright <- cbind(0, down[,1:(nc-1)])      
+
+    neighbours <- up + down + left + right + upleft + downleft + upright + downright
+    
+    # rules
+    
+    n <- m
+    n[m == 0 & neighbours == 3] <- 1
+    n[m == 1 & !neighbours %in%  2:3] <- 0
+    n
+}
+
+corners_on <- function(m){
+    m[1,1] <- 1
+    m[1,ncol(m)] <- 1
+    m[nrow(m),1] <- 1
+    m[nrow(m), ncol(m)] <- 1
+    m
+}
+
+
+convert_matrix <- function(x) x == "#"
+
+
+life_2 <- function(m){
+    corners_on(life(m))
+}
+
+parse_input <- function(x){
+    readr::read_lines(x) |>
+        stringr::str_split("", simplify = TRUE) |>
+        convert_matrix()
+}
+
+
+call_many <- function(fn, times, m){
+    eval(parse(text = paste("m", paste(rep(fn, times), collapse = " |> "), sep = " |> ")))
+}
+
+
+part_1 <- function(x){
+    m <- parse_input(x)
+    sum(call_many("life()", 100, m))
+}
+
+part_2 <- function(x){
+    m <- corners_on(parse_input(x))
+    sum(call_many("life_2()", 100, m))
+}
+
+demo_data <- ".#.#.#
+...##.
+#....#
+..#...
+#.#..#
+####.."
+
+part_1(demo_data)
+part_2(demo_data)
+
+input <- "actual input"
+
+part_1(input)
+part_2(input)   
+
+
